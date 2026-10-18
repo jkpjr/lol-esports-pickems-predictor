@@ -1,0 +1,127 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import duckdb
+
+# EDA and Data Processing
+
+def data_selection(df, included_cols, db):
+    # Choose the dataset using an SQL query
+    con = duckdb.connect(db, read_only=True)
+
+    df = con.execute(f"""
+    SELECT {", ".join(included_cols)}
+    FROM {df}
+    WHERE position = 'team';
+    """).df()
+
+    con.close()
+
+    return df
+
+def data_profiling(df):
+    """
+    Present the profile of the dataframe, including
+    description, number of missing values, number of unique values, and unique values of object series
+    """    
+    with pd.option_context('display.max_seq_items', None): # list all columns of the df with no limits
+        print(f"List of Columns: {df.columns}")
+    
+    with pd.option_context('display.max_rows', None): # list all rows of the df with no limits
+        # State the number of missing items for each column
+        print(f"\n{" COUNT OF MISSING VALUES ":-^50}") 
+        display(df.isnull().sum())
+
+        print(f"\n{" COUNT OF UNIQUE VALUES ":-^50}")
+        display(df.nunique())
+
+        print(f"\n{" UNIQUE VALUES OF OBJECT SERIES ":-^50}")
+        for object_column in df.select_dtypes(include=['object']):
+            if object_column == 'gameid': # skip gameid series
+                continue
+            print("\n",df[object_column].value_counts())
+
+def detect_outliers(df, col, IQR_multiplier=1.5):
+    # Setting the IQR
+    Q1 = df[col].quantile(0.25)
+    Q3 = df[col].quantile(0.75)
+    IQR = Q3 - Q1
+
+    # Standard 1.5 multiplier for outlier bounds
+    lower_bound = Q1 - IQR_multiplier * IQR
+    upper_bound = Q3 + IQR_multiplier * IQR
+
+    outliers = (df[col] < lower_bound) | (df[col] > upper_bound)
+    return outliers
+
+def count_outliers(df, num_cols, IQR_multiplier=1.5):
+    """
+    Utilizes IQR to detect outliers.
+    """
+    print(f"\n{" COUNT OF OUTLIERS ":-^50}")
+    for col in num_cols:
+
+        outliers = df[detect_outliers(df, col, IQR_multiplier)]
+        print(f"{f"{col}:":<23} {len(outliers):>5} ({len(outliers)/len(df[col]):<.2%})")
+
+
+def visualize_outliers(df, cols, plot_title="BOXPLOTS OF NUMERICAL COLUMNS", nrows=3, ncols=4, figsize=(16, 12)):
+    """
+    Utilize box plots to detect outliers.
+    """
+    fig, axes = plt.subplots(nrows, ncols, figsize=figsize) # Adjust depending on the number of numerical columns
+    axes = axes.flatten()
+    fig.suptitle(plot_title.upper(), fontsize=16, fontweight="bold", y=1.02)
+
+    for i, col in enumerate(cols):
+        sns.boxplot(y=df[col], ax=axes[i])
+        axes[i].set_title(col, fontsize=12, fontweight="bold")
+        axes[i].set_ylabel("")
+
+    # Hide unused subplots
+    for j in range(len(cols), len(axes)):
+        fig.delaxes(axes[j])
+
+    plt.tight_layout()
+    plt.show()
+
+def visualize_num_distribution(df, cols, plot_title="DISTRIBUTION OF NUMERICAL COLUMNS", nrows=3, ncols=4, figsize=(16, 12)):
+    """
+    Utilize histograms to visualize numerical distribution.
+    """
+    fig, axes = plt.subplots(nrows, ncols, figsize=figsize) # Adjust depending on the number of numerical columns
+    axes = axes.flatten()
+    fig.suptitle(plot_title.upper(), fontsize=16, fontweight="bold", y=1.02)
+
+    for i, col in enumerate(cols):
+        sns.histplot(x=df[col], ax=axes[i])
+        axes[i].set_title(col, fontsize=12, fontweight="bold")
+        axes[i].set_xlabel("")
+
+    # Hide unused subplots
+    for j in range(len(cols), len(axes)):
+        fig.delaxes(axes[j])
+
+    plt.tight_layout()
+    plt.show()
+
+def visualize_cat_distribution(df, cols, plot_title="DISTRIBUTION OF CATEGORICAL DATA", nrows=3, ncols=4, figsize=(16, 12)):
+    """
+    Utilize bar plots to visualize categorical distribution.
+    """
+    fig, axes = plt.subplots(nrows, ncols, figsize=figsize) # Adjust depending on the number of numerical columns
+    axes = axes.flatten()
+    fig.suptitle(plot_title.upper(), fontsize=16, fontweight="bold", y=1.02)
+
+    for i, col in enumerate(cols):
+        sns.countplot(data=df, x=col, ax=axes[i])
+        axes[i].set_title(col, fontsize=12, fontweight="bold")
+        axes[i].set_ylabel("")
+        axes[i].tick_params(axis="x", rotation=45)
+
+    # Hide unused subplots
+    for j in range(len(cols), len(axes)):
+        fig.delaxes(axes[j])
+
+    plt.tight_layout()
+    plt.show()

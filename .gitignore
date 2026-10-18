@@ -1,6 +1,7 @@
 # Ignore local data and databases
 OE datasets/
 *.duckdb
+*.csv
 
 # Ignore Python/Jupyter checkpoints
 .ipynb_checkpoints/
