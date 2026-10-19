@@ -23,23 +23,27 @@ def data_profiling(df):
     """
     Present the profile of the dataframe, including
     description, number of missing values, number of unique values, and unique values of object series
-    """    
+    """  
+    df_copy = df.copy()
+    if 'date' in df_copy.columns:
+        df_copy = df_copy.drop(['date'], axis='columns')
+
     with pd.option_context('display.max_seq_items', None): # list all columns of the df with no limits
-        print(f"List of Columns: {df.columns}")
+        print(f"List of Columns: {df_copy.columns}")
     
     with pd.option_context('display.max_rows', None): # list all rows of the df with no limits
         # State the number of missing items for each column
         print(f"\n{" COUNT OF MISSING VALUES ":-^50}") 
-        display(df.isnull().sum())
+        display(df_copy.isnull().sum())
 
         print(f"\n{" COUNT OF UNIQUE VALUES ":-^50}")
-        display(df.nunique())
+        display(df_copy.nunique())
 
         print(f"\n{" UNIQUE VALUES OF OBJECT SERIES ":-^50}")
-        for object_column in df.select_dtypes(include=['object']):
+        for object_column in df_copy.select_dtypes(include=['object']):
             if object_column == 'gameid': # skip gameid series
                 continue
-            print("\n",df[object_column].value_counts())
+            print("\n",df_copy[object_column].value_counts())
 
 def detect_outliers(df, col, IQR_multiplier=1.5):
     # Setting the IQR
