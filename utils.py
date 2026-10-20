@@ -58,10 +58,12 @@ def detect_outliers(df, col, IQR_multiplier=1.5):
     outliers = (df[col] < lower_bound) | (df[col] > upper_bound)
     return outliers
 
-def count_outliers(df, num_cols, IQR_multiplier=1.5):
+def count_outliers(df, numcols_to_drop, IQR_multiplier=1.5):
     """
     Utilizes IQR to detect outliers.
     """
+    num_cols = df.select_dtypes(include=["number"]).columns.drop(numcols_to_drop).tolist()
+
     print(f"\n{" COUNT OF OUTLIERS ":-^50}")
     for col in num_cols:
 
@@ -69,62 +71,68 @@ def count_outliers(df, num_cols, IQR_multiplier=1.5):
         print(f"{f"{col}:":<23} {len(outliers):>5} ({len(outliers)/len(df[col]):<.2%})")
 
 
-def visualize_outliers(df, cols, plot_title="BOXPLOTS OF NUMERICAL COLUMNS", nrows=3, ncols=4, figsize=(16, 12)):
+def visualize_outliers(df, numcols_to_drop, plot_title="BOXPLOTS OF NUMERICAL COLUMNS", nrows=3, ncols=4, figsize=(16, 12)):
     """
     Utilize box plots to detect outliers.
     """
+    num_cols = df.select_dtypes(include=["number"]).columns.drop(numcols_to_drop)
+    
     fig, axes = plt.subplots(nrows, ncols, figsize=figsize) # Adjust depending on the number of numerical columns
     axes = axes.flatten()
     fig.suptitle(plot_title.upper(), fontsize=16, fontweight="bold", y=1.02)
 
-    for i, col in enumerate(cols):
+    for i, col in enumerate(num_cols):
         sns.boxplot(y=df[col], ax=axes[i])
         axes[i].set_title(col, fontsize=12, fontweight="bold")
         axes[i].set_ylabel("")
 
     # Hide unused subplots
-    for j in range(len(cols), len(axes)):
+    for j in range(len(num_cols), len(axes)):
         fig.delaxes(axes[j])
 
     plt.tight_layout()
     plt.show()
 
-def visualize_num_distribution(df, cols, plot_title="DISTRIBUTION OF NUMERICAL COLUMNS", nrows=3, ncols=4, figsize=(16, 12)):
+def visualize_num_distribution(df, numcols_to_drop, plot_title="DISTRIBUTION OF NUMERICAL COLUMNS", nrows=3, ncols=4, figsize=(16, 12)):
     """
     Utilize histograms to visualize numerical distribution.
     """
+    num_cols = df.select_dtypes(include=["number"]).columns.drop(numcols_to_drop)
+
     fig, axes = plt.subplots(nrows, ncols, figsize=figsize) # Adjust depending on the number of numerical columns
     axes = axes.flatten()
     fig.suptitle(plot_title.upper(), fontsize=16, fontweight="bold", y=1.02)
 
-    for i, col in enumerate(cols):
+    for i, col in enumerate(num_cols):
         sns.histplot(x=df[col], ax=axes[i])
         axes[i].set_title(col, fontsize=12, fontweight="bold")
         axes[i].set_xlabel("")
 
     # Hide unused subplots
-    for j in range(len(cols), len(axes)):
+    for j in range(len(num_cols), len(axes)):
         fig.delaxes(axes[j])
 
     plt.tight_layout()
     plt.show()
 
-def visualize_cat_distribution(df, cols, plot_title="DISTRIBUTION OF CATEGORICAL DATA", nrows=3, ncols=4, figsize=(16, 12)):
+def visualize_cat_distribution(df, catcols_to_drop, plot_title="DISTRIBUTION OF CATEGORICAL DATA", nrows=3, ncols=4, figsize=(16, 12)):
     """
     Utilize bar plots to visualize categorical distribution.
     """
+    cat_cols = df.select_dtypes(include=["str"]).columns.drop(catcols_to_drop)
+
     fig, axes = plt.subplots(nrows, ncols, figsize=figsize) # Adjust depending on the number of numerical columns
     axes = axes.flatten()
     fig.suptitle(plot_title.upper(), fontsize=16, fontweight="bold", y=1.02)
 
-    for i, col in enumerate(cols):
+    for i, col in enumerate(cat_cols):
         sns.countplot(data=df, x=col, ax=axes[i])
         axes[i].set_title(col, fontsize=12, fontweight="bold")
         axes[i].set_ylabel("")
         axes[i].tick_params(axis="x", rotation=45)
 
     # Hide unused subplots
-    for j in range(len(cols), len(axes)):
+    for j in range(len(cat_cols), len(axes)):
         fig.delaxes(axes[j])
 
     plt.tight_layout()
