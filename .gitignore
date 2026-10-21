@@ -1,5 +1,4 @@
 # Ignore local data and databases
-OE datasets/
 *.duckdb
 *.csv
 
