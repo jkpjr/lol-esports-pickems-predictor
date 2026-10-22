@@ -5,20 +5,6 @@ import duckdb
 
 # EDA and Data Processing
 
-def data_selection(df, included_cols, db):
-    # Choose the dataset using an SQL query
-    con = duckdb.connect(db, read_only=True)
-
-    df = con.execute(f"""
-    SELECT {", ".join(included_cols)}
-    FROM {df}
-    WHERE position = 'team';
-    """).df()
-
-    con.close()
-
-    return df
-
 def data_profiling(df):
     """
     Present the profile of the dataframe, including
