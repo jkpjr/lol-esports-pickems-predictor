@@ -57,7 +57,7 @@ def count_outliers(df, numcols_to_drop, IQR_multiplier=1.5):
         print(f"{f"{col}:":<23} {len(outliers):>5} ({len(outliers)/len(df[col]):<.2%})")
 
 
-def visualize_outliers(df, numcols_to_drop, plot_title="BOXPLOTS OF NUMERICAL COLUMNS", nrows=3, ncols=4, figsize=(16, 12)):
+def visualize_outliers(df, numcols_to_drop, plot_title="BOXPLOTS OF NUMERICAL COLUMNS", nrows=20, ncols=4, figsize=(20, 80)):
     """
     Utilize box plots to detect outliers.
     """
@@ -79,7 +79,7 @@ def visualize_outliers(df, numcols_to_drop, plot_title="BOXPLOTS OF NUMERICAL CO
     plt.tight_layout()
     plt.show()
 
-def visualize_num_distribution(df, numcols_to_drop, plot_title="DISTRIBUTION OF NUMERICAL COLUMNS", nrows=3, ncols=4, figsize=(16, 12)):
+def visualize_num_distribution(df, numcols_to_drop, plot_title="DISTRIBUTION OF NUMERICAL COLUMNS", nrows=20, ncols=4, figsize=(20, 80)):
     """
     Utilize histograms to visualize numerical distribution.
     """
@@ -101,7 +101,7 @@ def visualize_num_distribution(df, numcols_to_drop, plot_title="DISTRIBUTION OF 
     plt.tight_layout()
     plt.show()
 
-def visualize_cat_distribution(df, catcols_to_drop, plot_title="DISTRIBUTION OF CATEGORICAL DATA", nrows=3, ncols=4, figsize=(16, 12)):
+def visualize_cat_distribution(df, catcols_to_drop, plot_title="DISTRIBUTION OF CATEGORICAL DATA", nrows=20, ncols=4, figsize=(20, 20)):
     """
     Utilize bar plots to visualize categorical distribution.
     """
