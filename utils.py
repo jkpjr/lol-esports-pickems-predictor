@@ -1,27 +1,35 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import duckdb
+import missingno as msno
+
+# Formats the global decimal places to 2
+pd.options.display.float_format = '{:.2f}'.format
 
 # EDA and Data Processing
+def null_map(df, figsize=(14, 8)):
+    """
+    Maps the missing values using the missingno library
+    """
+    plt.figure(figsize=figsize)
+    msno.matrix(df, labels=True, fontsize=8)
+    plt.title('MISSING VALUES MAP', fontsize=24, fontweight="bold")
+    plt.show()
+
+    print(f"\n{" PERCENTAGE OF MISSING VALUES ":-^50}") 
+    missing_percentage = (df.isnull().mean() * 100).sort_values(ascending=False)
+    print(missing_percentage[missing_percentage > 0])   
 
 def data_profiling(df):
     """
     Present the profile of the dataframe, including
-    description, number of missing values, number of unique values, and unique values of object series
+    description, number of unique values, and unique values of object series
     """  
     df_copy = df.copy()
-    if 'date' in df_copy.columns:
-        df_copy = df_copy.drop(['date'], axis='columns')
-
     with pd.option_context('display.max_seq_items', None): # list all columns of the df with no limits
         print(f"List of Columns: {df_copy.columns}")
     
     with pd.option_context('display.max_rows', None): # list all rows of the df with no limits
-        # State the number of missing items for each column
-        print(f"\n{" COUNT OF MISSING VALUES ":-^50}") 
-        display(df_copy.isnull().sum())
-
         print(f"\n{" COUNT OF UNIQUE VALUES ":-^50}")
         display(df_copy.nunique())
 
@@ -101,7 +109,7 @@ def visualize_num_distribution(df, numcols_to_drop, plot_title="DISTRIBUTION OF 
     plt.tight_layout()
     plt.show()
 
-def visualize_cat_distribution(df, catcols_to_drop, plot_title="DISTRIBUTION OF CATEGORICAL DATA", nrows=20, ncols=4, figsize=(20, 20)):
+def visualize_cat_distribution(df, catcols_to_drop, plot_title="DISTRIBUTION OF CATEGORICAL DATA", nrows=20, ncols=4, figsize=(15, 15)):
     """
     Utilize bar plots to visualize categorical distribution.
     """
