@@ -39,7 +39,7 @@ def data_profiling(df):
                 continue
             print("\n",df_copy[object_column].value_counts())
 
-def detect_outliers(df, col, IQR_multiplier=1.5):
+def detect_outliers(df, col, IQR_multiplier=2.0):
     # Setting the IQR
     Q1 = df[col].quantile(0.25)
     Q3 = df[col].quantile(0.75)
@@ -52,7 +52,7 @@ def detect_outliers(df, col, IQR_multiplier=1.5):
     outliers = (df[col] < lower_bound) | (df[col] > upper_bound)
     return outliers
 
-def count_outliers(df, numcols_to_drop, IQR_multiplier=1.5):
+def count_outliers(df, numcols_to_drop, IQR_multiplier=2.0):
     """
     Utilizes IQR to detect outliers.
     """
@@ -60,9 +60,9 @@ def count_outliers(df, numcols_to_drop, IQR_multiplier=1.5):
 
     print(f"\n{" COUNT OF OUTLIERS ":-^50}")
     for col in num_cols:
-
         outliers = df[detect_outliers(df, col, IQR_multiplier)]
-        print(f"{f"{col}:":<23} {len(outliers):>5} ({len(outliers)/len(df[col]):<.2%})")
+        if (len(outliers)/len(df[col])) > 0.00:
+            print(f"{f"{col}:":<23} {len(outliers):>5} ({len(outliers)/len(df[col]):<.2%})")
 
 
 def visualize_outliers(df, numcols_to_drop, plot_title="BOXPLOTS OF NUMERICAL COLUMNS", nrows=20, ncols=4, figsize=(20, 80)):
