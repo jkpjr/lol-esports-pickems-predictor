@@ -16,9 +16,21 @@ def null_map(df, figsize=(14, 8)):
     plt.title('MISSING VALUES MAP', fontsize=24, fontweight="bold")
     plt.show()
 
-    print(f"\n{" PERCENTAGE OF MISSING VALUES ":-^50}") 
-    missing_percentage = (df.isnull().mean() * 100).sort_values(ascending=False)
-    print(missing_percentage[missing_percentage > 0])   
+    # List the exact counts and percentages of the missing values
+    missing_count = df.isnull().sum()
+    missing_pct = df.isnull().mean() * 100
+
+    missing_df = pd.DataFrame({
+        'Count': missing_count,
+        '(%)': missing_pct.round(2)
+    })
+
+    missing_df = missing_df[missing_df['Count'] > 0].sort_values(
+        by='(%)', ascending=False
+    )
+
+    print(f"\n{' MISSING VALUES REPORT ':-^50}")
+    print(missing_df)  
 
 def data_profiling(df):
     """
@@ -34,8 +46,9 @@ def data_profiling(df):
         display(df_copy.nunique())
 
         print(f"\n{" UNIQUE VALUES OF OBJECT SERIES ":-^50}")
+        ban_cols = ['ban1', 'ban2', 'ban3', 'ban4', 'ban5']
         for object_column in df_copy.select_dtypes(include=['object']):
-            if object_column == 'gameid': # skip gameid series
+            if object_column in ['date','teamid','gameid', 'ban1'] or object_column in ban_cols:
                 continue
             print("\n",df_copy[object_column].value_counts())
 
@@ -56,13 +69,32 @@ def count_outliers(df, numcols_to_drop, IQR_multiplier=2.0):
     """
     Utilizes IQR to detect outliers.
     """
-    num_cols = df.select_dtypes(include=["number"]).columns.drop(numcols_to_drop).tolist()
+    num_cols = (
+        df.select_dtypes(include=["number"])
+        .columns.drop(numcols_to_drop, errors="ignore")
+        .tolist()
+    )
 
-    print(f"\n{" COUNT OF OUTLIERS ":-^50}")
+    results = []
     for col in num_cols:
-        outliers = df[detect_outliers(df, col, IQR_multiplier)]
-        if (len(outliers)/len(df[col])) > 0.00:
-            print(f"{f"{col}:":<23} {len(outliers):>5} ({len(outliers)/len(df[col]):<.2%})")
+        outlier_mask = detect_outliers(df, col, IQR_multiplier)
+        count = outlier_mask.sum()
+        percentage = (count / len(df)) * 100
+
+        results.append({
+            "Column": col,
+            "Count": count,
+            "(%)": round(percentage, 2),
+        })
+
+    outliers_df = pd.DataFrame(results)
+
+    outliers_df = outliers_df[outliers_df['Count'] > 0].sort_values(
+        by="Count", ascending=False
+    ).reset_index(drop=True)
+
+    print(f"\n{" OUTLIER COUNTS AND PERCENTAGES PER COL ":-^50}")
+    print(outliers_df)
 
 
 def visualize_outliers(df, numcols_to_drop, plot_title="BOXPLOTS OF NUMERICAL COLUMNS", nrows=20, ncols=4, figsize=(20, 80)):
