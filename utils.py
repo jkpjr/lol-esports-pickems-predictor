@@ -18,19 +18,22 @@ def null_map(df, figsize=(14, 8)):
 
     # List the exact counts and percentages of the missing values
     missing_count = df.isnull().sum()
-    missing_pct = df.isnull().mean() * 100
+    if missing_count.any(): 
+        missing_pct = df.isnull().mean() * 100
 
-    missing_df = pd.DataFrame({
-        'Count': missing_count,
-        '(%)': missing_pct.round(2)
-    })
+        missing_df = pd.DataFrame({
+            'Count': missing_count,
+            '(%)': missing_pct.round(2)
+        })
 
-    missing_df = missing_df[missing_df['Count'] > 0].sort_values(
-        by='(%)', ascending=False
-    )
+        missing_df = missing_df[missing_df['Count'] > 0].sort_values(
+            by='(%)', ascending=False
+        )
 
-    print(f"\n{' MISSING VALUES REPORT ':-^50}")
-    print(missing_df)  
+        print(f"\n{' MISSING VALUES REPORT ':-^50}")
+        print(missing_df)  
+    else:
+        print("DATA IS COMPLETE")
 
 def data_profiling(df):
     """
